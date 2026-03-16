@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarun's Task Manager</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Multi-color Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-25px); }
+        }
+
+        /* Header */
+        .header {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 25px 0;
+            text-align: center;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff69b4, #ff1493, #238636);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease infinite;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .daily-quote {
+            font-size: 1.1rem;
+            color: #8b949e;
+            font-weight: 400;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 20px;
+            font-style: italic;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        /* Task Table */
+        .task-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 2px;
+            background: transparent;
+        }
+
+        .task-table thead th {
+            background: #21262d;
+            border: 1px solid #30363d;
+            padding: 20px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #f0f6fc;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .task-table td {
+            padding: 20px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            vertical-align: middle;
+            transition: all 0.2s ease;
+        }
+
+        .task-table tr:hover td {
+            background: #161b22;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* PINK Dates */
+        .date-cell { 
+            font-weight: 600; 
+            font-size: 1.3rem; 
+            min-width: 220px;
+            color: #ff69b4;
+            cursor: pointer;
+            padding: 15px 0;
+        }
+
+        .date-cell:hover {
+            color: #ff1493;
+            text-shadow: 0 0 12px rgba(255,105,180,0.6);
+        }
+
+        .date-cell .day-number {
+            font-size: 0.85rem;
+            color: #8b949e;
+            margin-top: 8px;
+            font-weight: 400;
+        }
+
+        .day-cell { 
+            font-weight: 500; 
+            color: #a5d6ff; 
+            min-width: 140px;
+            font-size: 1.1rem;
+        }
+
+        .checkbox-cell { min-width: 100px; text-align: center; }
+        .action-cell { min-width: 220px; }
+
+        /* Pink Checkbox */
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            appearance: none;
+            background: #21262d;
+            border: 1px solid #484f58;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            margin: 0 8px;
+        }
+
+        .custom-checkbox:hover {
+            border-color: #ff69b4;
+        }
+
+        .custom-checkbox:checked {
+            background: #ff69b4;
+            border-color: #ff1493;
+        }
+
+        .custom-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #0d1117;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* GREEN Write + RED View Buttons */
+        .edit-btn, .view-btn {
+            color: #f0f6fc;
+            border: 1px solid transparent;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            width: 48%;
+            height: 44px;
+        }
+
+        .edit-btn {
+            background: #238636;
+            border-color: #2ea043;
+        }
+
+        .view-btn {
+            background: #da3633;
+            border-color: #f85149;
+        }
+
+        .edit-btn:hover {
+            background: #2ea043;
+            box-shadow: 0 2px 8px rgba(35, 134, 54, 0.3);
+        }
+
+        .view-btn:hover {
+            background: #f85149;
+            box-shadow: 0 2px 8px rgba(218, 54, 51, 0.3);
+        }
+
+        /* Tooltip */
+        .quote-tooltip {
+            position: fixed;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 16px;
+            max-width: 350px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            z-index: 3000;
+            display: none;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.75);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 32px;
+            max-width: 800px;
+            max-height: 85vh;
+            width: 100%;
+            overflow-y: auto;
+        }
+
+        .modal-header h2 {
+            font-size: 1.8rem;
+            color: #f0f6fc;
+            text-align: center;
+            margin-bottom: 24px;
+            font-weight: 600;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 12px;
+        }
+
+        .task-textarea {
+            width: 100%;
+            min-height: 350px;
+            padding: 16px;
+            background: #161b22;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .task-textarea:focus {
+            outline: none;
+            border-color: #ff69b4;
+            box-shadow: 0 0 0 3px rgba(255,105,180,0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 24px;
+        }
+
+        .done-btn, .close-btn {
+            padding: 12px 24px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            flex: 1;
+            max-width: 160px;
+        }
+
+        .done-btn { 
+            background: #238636;
+            color: #f0f6fc;
+            border-color: #2ea043;
+        }
+
+        .close-btn { 
+            background: #21262d;
+            color: #c9d1d9;
+            border-color: #30363d;
+        }
+
+        .today-row td {
+            border-color: #ff69b4;
+            box-shadow: 0 0 0 1px rgba(255,105,180,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .date-cell { font-size: 1.1rem; min-width: 140px; }
+            .task-textarea { min-height: 250px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="header">
+        <h1>Tarun's Task Manager</h1>
+        <div class="daily-quote" id="dailyQuote"></div>
+    </div>
+
+    <div class="container">
+        <div class="status-bar" id="statusBar">Loading your 108-day journey...</div>
+
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Day</th>
+                    <th>Done</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="taskTable"></tbody>
+        </table>
+    </div>
+
+    <div class="quote-tooltip" id="quoteTooltip"></div>
+
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="editDateTitle">Add Tasks</h2>
+            </div>
+            <textarea class="task-textarea" id="editTaskTextarea" placeholder="Write your daily tasks here..."></textarea>
+            <div class="modal-buttons">
+                <button class="done-btn" onclick="saveAndCloseEdit()">Done</button>
+                <button class="close-btn" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="viewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="viewDateTitle">Your Tasks</h2>
+            </div>
+            <div class="task-textarea" id="viewTaskTextarea" readonly></div>
+            <div class="modal-buttons">
+                <button class="close-btn" onclick="closeViewModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const consistencyQuotes = [
+            "Day 1: The best time to start was yesterday. Today is your second best chance!",
+            "Day 2: Small steps every day lead to big results. Keep going!",
+            "Day 3: Consistency is the key that unlocks the door to achievement.",
+            "Day 4: Success doesn't come from what you do occasionally, but consistently.",
+            "Day 5: Every master was once a beginner who didn't quit.",
+            "Day 6: The pain of discipline weighs ounces compared to regret.",
+            "Day 7: Week 1 complete! You're building momentum! 🚀",
+            "Day 8: Champions keep showing up, even on tough days.",
+            "Day 9: Your habits today shape your future tomorrow.",
+            "Day 10: Double digits! You're 10% through your journey! 💪"
+        ];
+
+        let start = new Date("2026-03-15");
+        let end = new Date("2026-06-30");
+        let table = document.getElementById("taskTable");
+        let statusBar = document.getElementById("statusBar");
+        let dailyQuote = document.getElementById("dailyQuote");
+        let currentEditDate = '';
+        let tooltipTimeout = null;
+
+        // Create multi-color particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const colors = ['#ff69b4', '#238636', '#da3633'];
+            for (let i = 0; i < 12; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.background = colors[i % 3];
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.width = Math.random() * 3 + 1 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        function getDayNumber(dateStr) {
+            let targetDate = new Date(dateStr);
+            let diffTime = targetDate - start;
+            let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays + 1;
+        }
+
+        function getQuoteForDay(dayNum) {
+            if (dayNum <= consistencyQuotes.length) {
+                return consistencyQuotes[dayNum - 1];
+            }
+            return `Day ${dayNum}: Your consistency is creating greatness! Keep going! 💪`;
+        }
+
+        function updateDailyQuote() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayDayNum = getDayNumber(todayStr);
+            dailyQuote.textContent = getQuoteForDay(todayDayNum);
+        }
+
+        function updateStatus() {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            const totalDays = 108;
+            let completed = 0;
+            
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                if (localStorage.getItem("done_" + d.toISOString().split('T')[0]) === "true") completed++;
+            }
+            
+            const todayDayNum = getDayNumber(todayStr);
+            statusBar.innerHTML = `Day ${todayDayNum} of ${totalDays} | Today: ${now.toLocaleDateString('en-IN', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})} | ${completed}/${totalDays} completed (${Math.round((completed/totalDays)*100)}%)`;
+        }
+
+        function generateTable() {
+            table.innerHTML = '';
+            
+            let current = new Date(start);
+            while (current <= end) {
+                let dateStr = current.toISOString().split("T")[0];
+                let dayName = current.toLocaleDateString("en-US", {weekday: "long"});
+                let monthName = current.toLocaleString('default', {month: 'long'});
+                let dayNum = getDayNumber(dateStr);
+                let checked = localStorage.getItem("done_" + dateStr) === "true";
+                let isToday = dateStr === new Date().toISOString().split("T")[0];
+
+                let row = document.createElement("tr");
+                if (isToday) row.classList.add("today-row");
+
+                row.innerHTML = `
+                    <td class="date-cell" onclick="showQuote('${dateStr}', event); event.stopPropagation();">
+                        ${current.getDate()} ${monthName}
+                        <div class="day-number">Day ${dayNum}</div>
+                    </td>
+                    <td class="day-cell">${dayName}</td>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="custom-checkbox" ${checked ? "checked" : ""}
+                               onchange="saveDone('${dateStr}', this)">
+                    </td>
+                    <td class="action-cell">
+                        <div style="display: flex; gap: 8px;">
+                            <button class="edit-btn" onclick="openEditModal('${dateStr}'); event.stopPropagation();">Write Task</button>
+                            <button class="view-btn" onclick="openViewModal('${dateStr}'); event.stopPropagation();">View Task</button>
+                        </div>
+                    </td>
+                `;
+
+                table.appendChild(row);
+                current.setDate(current.getDate() + 1);
+            }
+        }
+
+        // FIXED Quote Tooltip
+        function showQuote(dateStr, event) {
+            if (tooltipTimeout) clearTimeout(tooltipTimeout);
+            hideQuoteTooltip();
+            
+            const dayNum = getDayNumber(dateStr);
+            const quote = getQuoteForDay(dayNum);
+            const tooltip = document.getElementById('quoteTooltip');
+            
+            tooltip.innerHTML = `<strong>${new Date(dateStr).toLocaleDateString('en-IN', {weekday: 'long', day: 'numeric', month: 'long'})}</strong><br><br>${quote}`;
+            tooltip.style.display = 'block';
+            
+            const rect = event.currentTarget.getBoundingClientRect();
+            tooltip.style.left = (rect.left + rect.width/2 - 175) + 'px';
+            tooltip.style.top = (rect.bottom + 8) + 'px';
+            
+            tooltipTimeout = setTimeout(hideQuoteTooltip, 4000);
+            
+            const hideOnClick = (e) => {
+                if (!tooltip.contains(e.target) && !event.currentTarget.contains(e.target)) {
+                    hideQuoteTooltip();
+                    document.removeEventListener('click', hideOnClick);
+                }
+            };
+            document.addEventListener('click', hideOnClick);
+        }
+
+        function hideQuoteTooltip() {
+            const tooltip = document.getElementById('quoteTooltip');
+            tooltip.style.display = 'none';
+            if (tooltipTimeout) {
+                clearTimeout(tooltipTimeout);
+                tooltipTimeout = null;
+            }
+        }
+
+        // Core functions
+        function saveTask(date, text) { localStorage.setItem("task_" + date, text); }
+        function saveDone(date, el) { 
+            localStorage.setItem("done_" + date, el.checked); 
+            setTimeout(updateStatus, 100); 
+        }
+
+        function openEditModal(dateStr) {
+            currentEditDate = dateStr;
+            const dateTitle = new Date(dateStr).toLocaleDateString('en-IN', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            });
+            document.getElementById('editDateTitle').textContent = `Tasks: ${dateTitle}`;
+            document.getElementById('editTaskTextarea').value = localStorage.getItem("task_" + dateStr) || '';
+            document.getElementById('editModal').style.display = 'flex';
+            setTimeout(() => document.getElementById('editTaskTextarea').focus(), 200);
+            hideQuoteTooltip();
+        }
+
+        function saveAndCloseEdit() {
+            saveTask(currentEditDate, document.getElementById('editTaskTextarea').value);
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+        function openViewModal(dateStr) {
+            const dateTitle = new Date(dateStr).toLocaleDateString('en-IN', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            });
+            document.getElementById('viewDateTitle').textContent = `Tasks: ${dateTitle}`;
+            const task = localStorage.getItem("task_" + dateStr) || 'No tasks yet. Add some!';
+            document.getElementById('viewTaskTextarea').value = task;
+            document.getElementById('viewModal').style.display = 'flex';
+            hideQuoteTooltip();
+        }
+        function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
+
+        // Event listeners
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) this.style.display = 'none';
+            });
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay').forEach(modal => modal.style.display = 'none');
+                hideQuoteTooltip();
+            }
+        });
+
+        // Initialize
+        createParticles();
+        updateDailyQuote();
+        generateTable();
+        setInterval(updateStatus, 60000);
+    </script>
+</body>
+</html>
